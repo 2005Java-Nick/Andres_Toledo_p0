@@ -1,8 +1,0 @@
--Experience Manager(UserInterface)
-	-Displays Login
-	-Takes User inputs
-	-Creates new session if authentication is valid
-	-Creates new user if no account
-	-re-prompts login if no session is created
-	-validate inputs
-	
