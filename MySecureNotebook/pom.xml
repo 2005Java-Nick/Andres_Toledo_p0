@@ -5,6 +5,7 @@
   <version>0.0.1-SNAPSHOT</version>
   <name>MySecureNotebook</name>
   <description>Project0</description>
+  
   <dependencies>
   	<!-- https://mvnrepository.com/artifact/org.jasypt/jasypt -->
 	<dependency>

@@ -2,6 +2,7 @@ package com.revature.andres.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridLayout;
 
 import java.awt.event.KeyEvent;
@@ -97,8 +98,9 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 		this.add(BorderLayout.CENTER,bar);
 		
 		//Add JMenu to for form
-		this.txtPage.setBackground(Color.BLACK);
-		this.txtPage.setForeground(Color.GREEN);
+		this.txtPage.setBackground(Color.WHITE);
+		this.txtPage.setForeground(Color.BLACK);
+		this.getTxtPage().setFont(new Font("Times New Roman", Font.PLAIN, 20));
 		this.getJMenuBar().add(this.getBtnPreviousPage());
 		this.getJMenuBar().add(this.getBtnNextPage());
 		this.getJMenuBar().add(this.getBtnEncryptPage());
@@ -164,28 +166,44 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 			this.getBtnPreviousPage().setEnabled(false);
 			this.getBtnNextPage().setEnabled(false);
 			this.getTxtPage().setEnabled(false);
+			this.getBtnDeletePage().setEnabled(false);
+			this.getBtnEncryptPage().setEnabled(false);
+			this.getBtnDecryptPage().setEnabled(false);
 		}else
 		if(this.getPageIndex()==0 && this.getPageIndex()==this.getPages().size()-1)
 		{
 			this.getTxtPage().setEnabled(true);
 			this.getBtnPreviousPage().setEnabled(false);
 			this.getBtnNextPage().setEnabled(false);
+			this.getBtnDeletePage().setEnabled(true);
+			this.getBtnEncryptPage().setEnabled(true);
+			this.getBtnDecryptPage().setEnabled(true);
+			
 		}else if(this.getPageIndex()==0 && this.getPageIndex()<this.getPages().size()-1)
 		{
 			this.getTxtPage().setEnabled(true);
 			this.getBtnPreviousPage().setEnabled(false);
 			this.getBtnNextPage().setEnabled(true);
+			this.getBtnDeletePage().setEnabled(true);
+			this.getBtnEncryptPage().setEnabled(true);
+			this.getBtnDecryptPage().setEnabled(true);
 		}else if(this.getPageIndex()>0 && this.getPageIndex()<this.getPages().size()-1)
 		{
 			this.getTxtPage().setEnabled(true);
 			this.getBtnPreviousPage().setEnabled(true);
 			this.getBtnNextPage().setEnabled(true);
+			this.getBtnDeletePage().setEnabled(true);
+			this.getBtnEncryptPage().setEnabled(true);
+			this.getBtnDecryptPage().setEnabled(true);
 		}
 		else if(this.getPageIndex()==this.getPages().size()-1)
 		{
 			this.getTxtPage().setEnabled(true);
 			this.getBtnPreviousPage().setEnabled(true);
 			this.getBtnNextPage().setEnabled(false);
+			this.getBtnDeletePage().setEnabled(true);
+			this.getBtnEncryptPage().setEnabled(true);
+			this.getBtnDecryptPage().setEnabled(true);
 		}
 
 		verifyPageEncrypted();

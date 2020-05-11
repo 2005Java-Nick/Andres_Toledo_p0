@@ -36,7 +36,7 @@ public class MainProgramWindow extends JFrame {
 		this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		SessionTimer timer =new SessionTimer();
 		timer.start();
-		this.setTitle("Welcome: " + this.getUserName()+"Page: "+pageName+"	Session Time Remaining: "+manager.getUser().getAcessToken().getSession().getTimeRemaining()+" seconds");
+		this.setTitle("Welcome: " + this.getUserName()+" Page: "+pageName+"	     Session Time Remaining: "+manager.getUser().getAcessToken().getSession().getTimeRemaining()+" seconds");
 		this.setContentPane(this.getContent());
 	}
 	
@@ -93,7 +93,7 @@ public class MainProgramWindow extends JFrame {
 					e.printStackTrace();
 				}
 				manager.getUser().getAcessToken().getSession().minusSeconds(1);
-				setTitle("Welcome: " + getUserName()+"	Page: "+pageName+"	Session Time Remaining: "+manager.getUser().getAcessToken().getSession().getTimeRemaining()+" seconds");
+				setTitle("Welcome: " + getUserName()+"     Page: "+pageName+"     Session Time Remaining: "+manager.getUser().getAcessToken().getSession().getTimeRemaining()+" seconds");
 			}
 			manager.printMessage("Session timed out please login again");
 			getParentLogin().setVisible(true);
