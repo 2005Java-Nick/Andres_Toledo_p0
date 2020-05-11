@@ -29,7 +29,7 @@ public class ExperienceManager implements ExperienceManagerInterface {
 	
 	//Login screen 
 	private LoginScreen login;
-	
+
 	//Mock variables
 	public AuthenticationInterface au;
 	
@@ -96,14 +96,14 @@ public class ExperienceManager implements ExperienceManagerInterface {
 
 	//Displays login screen
 	public void displayLogin() {
-		login=new LoginScreen();
-		login.setVisible(true);
+		this.setLogin(new LoginScreen());
+		this.getLogin().setVisible(true);
 		log.info("Displayed login screen");
 	}
 
 	//Request user login
-	public boolean requestLogin(User user,String seed) {
-		boolean loginResult=authenticator.verifyUserCredentials(user,seed);
+	public boolean requestLogin(User u,String seed) {
+		boolean loginResult=authenticator.verifyUserCredentials(u,seed);
 		if(!loginResult)
 		{
 			log.info("ExperienceManager:requestLogin: Failed login request for username : "+ getAuthenticator().getEncryption().decryptString(seed, user.getUsername()));
@@ -174,4 +174,11 @@ public class ExperienceManager implements ExperienceManagerInterface {
 		this.user = user;
 	}
 
+	public LoginScreen getLogin() {
+		return login;
+	}
+
+	public void setLogin(LoginScreen login) {
+		this.login = login;
+	}
 }

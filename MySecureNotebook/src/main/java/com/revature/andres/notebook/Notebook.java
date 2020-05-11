@@ -28,12 +28,13 @@ public class Notebook implements NotebookInterface,Serializable{
 	//Adds new page to notebook
 	public void addPage(Page p)
 	{
-		this.pages.add(p);
+		this.getPages().add(p);
 	}
 	//Removes page from Notebook
 	public void removePage(int index)
 	{
-		this.getPages().remove(index);
+		if(index>=0 && index<this.getPages().size())
+			this.getPages().remove(index);
 	}
 	
 	//---------------------------------Getters and Setters-------------------------------

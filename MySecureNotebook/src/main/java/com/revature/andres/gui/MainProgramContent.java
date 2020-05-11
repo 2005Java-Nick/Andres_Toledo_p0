@@ -271,6 +271,7 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 		this.saveChanges();
 		log.info("Saved changes");
 	}
+	//Unimplemented key event
 	@Override
 	public void keyTyped(KeyEvent e) {
 	}
@@ -336,29 +337,23 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 			saveChanges();
 		}
 	}
-
 	//Verifies if data is encrypted 
 	@Override
 	public void mouseEntered(MouseEvent e) {
 		verifyPageEncrypted();
 		validatePageIndex();
 	}
-
+	//Unimplemented mouse event
 	@Override
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
+	public void mouseExited(MouseEvent e) {	
 	}
-
+	//Unimplemented mouse event
 	@Override
 	public void mousePressed(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
-
+	//Unimplemented mouse event
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		// TODO Auto-generated method stub	
 	}
 
 	//---------------------------------- Getters and Setters------------------------------------

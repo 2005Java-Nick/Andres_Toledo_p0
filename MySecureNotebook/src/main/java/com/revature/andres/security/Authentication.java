@@ -83,10 +83,12 @@ public class Authentication implements AuthenticationInterface{
 			return true;
 		}
 	}
+	
 	//Saves users data
 	public boolean saveUser(User u) {
 		return this.getFileIo().saveUser(u,this.getWorkingUserDirectory()); 
 	}
+	
 	//Creates new user file
 	public boolean createUser(User u,String seed) {
 		return this.fileIo.createUser(u, seed, this.encryption);
