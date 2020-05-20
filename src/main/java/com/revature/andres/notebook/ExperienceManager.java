@@ -5,6 +5,7 @@ import javax.swing.JPasswordField;
 
 import org.apache.log4j.Logger;
 
+import com.revature.andres.db.PSQLConnection;
 import com.revature.andres.gui.LoginScreen;
 import com.revature.andres.interfaces.AuthenticationInterface;
 import com.revature.andres.interfaces.ExperienceManagerInterface;
@@ -15,6 +16,8 @@ public class ExperienceManager implements ExperienceManagerInterface {
 
 	//-----------------------------------Variables-----------------------------------------
 	
+	//Database connection
+	private PSQLConnection connector;
 	//One Experience manager for entire Application
 	private static ExperienceManager program;
 	
@@ -49,6 +52,7 @@ public class ExperienceManager implements ExperienceManagerInterface {
 	public ExperienceManager()
 	{
 		this.authenticator=new Authentication();
+		this.setConnector(new PSQLConnection());
 		log.info("Program started running.");
 	}
 	
@@ -103,7 +107,7 @@ public class ExperienceManager implements ExperienceManagerInterface {
 
 	//Request user login
 	public boolean requestLogin(User u,String seed) {
-		boolean loginResult=authenticator.verifyUserCredentials(u,seed);
+		boolean loginResult=authenticator.verifyUserCredentials(u,seed,this.getConnector());
 		if(!loginResult)
 		{
 			log.info("ExperienceManager:requestLogin: Failed login request for username : "+ getAuthenticator().getEncryption().decryptString(seed, user.getUsername()));
@@ -152,7 +156,6 @@ public class ExperienceManager implements ExperienceManagerInterface {
 
 	//Handles creating new users
 	public boolean createAccount(User u,String seed) {
-		//Mock Test: this.au.createUser(user, password);
 		return authenticator.createUser(u,seed);
 	}
 
@@ -181,4 +184,13 @@ public class ExperienceManager implements ExperienceManagerInterface {
 	public void setLogin(LoginScreen login) {
 		this.login = login;
 	}
+
+	public PSQLConnection getConnector() {
+		return connector;
+	}
+
+	public void setConnector(PSQLConnection connector) {
+		this.connector = connector;
+	}
+
 }

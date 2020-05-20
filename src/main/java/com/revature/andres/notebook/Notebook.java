@@ -17,12 +17,15 @@ public class Notebook implements NotebookInterface,Serializable{
 	//List of pages in Notebook
 	private List<Page>pages=new LinkedList<Page>();
 	
+	//NEW: notebook name
+	
+	private String name;
+	
 	//-------------------------------------Methods-----------------------------------------
 	
 	//Constructor
 	public Notebook() {
 		this.pages=new ArrayList<Page>();
-		this.getPages().add(new Page("Welcome"));
 	}
 	
 	//Adds new page to notebook
@@ -37,6 +40,12 @@ public class Notebook implements NotebookInterface,Serializable{
 			this.getPages().remove(index);
 	}
 	
+	//NEW: returns amount of notebook pages
+	public int getPageCount()
+	{
+		return this.getPages().size();
+	}
+	
 	//---------------------------------Getters and Setters-------------------------------
 	
 	//Returns a list of pages
@@ -46,6 +55,14 @@ public class Notebook implements NotebookInterface,Serializable{
 	//Sets pages List
 	public void setPages(List<Page> pages) {
 		this.pages = pages;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

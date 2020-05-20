@@ -5,6 +5,7 @@ import java.net.UnknownHostException;
 
 import org.apache.log4j.Logger;
 
+import com.revature.andres.db.PSQLConnection;
 import com.revature.andres.interfaces.AuthenticationInterface;
 import com.revature.andres.io.FileIO;
 import com.revature.andres.user.User;
@@ -34,27 +35,40 @@ public class Authentication implements AuthenticationInterface{
 	}
 	
 	//Verify user credentials
-	public boolean verifyUserCredentials(User u,String seed){
-		this.workingUserDirectory=this.fileIo.verifyUserExists(u, seed, this.encryption);
+	public boolean verifyUserCredentials(User u,String seed,PSQLConnection con){
+
+		this.workingUserDirectory=con.verifyUserCredentials(u, seed, this.encryption);
+		
 		if(this.workingUserDirectory.contains(".udb"))
 		{
+			this.workingUserDirectory=this.fileIo.verifyUserExists(u, seed, this.encryption);
 			log.warn("Authentication:verifyUserCredentials:User "+this.workingUserDirectory.replace(".udb", "")+" logged in");
 			return true;
 		}else
 		{
-			try {
-				log.warn("Authentication:verifyUserCredentials:User attempted login from "+InetAddress.getLocalHost().getHostName()+ " but password was incorrect");
-			} catch (UnknownHostException e) {
-				log.warn("Authentication:verifyUserCredentials:User attempted login but password was incorrect from unknown host");
-				e.printStackTrace();
+			this.workingUserDirectory=this.fileIo.verifyUserExists(u, seed, this.encryption);
+			
+			if(this.workingUserDirectory.contains(".udb"))
+			{
+				log.warn("Authentication:verifyUserCredentials:User "+this.workingUserDirectory.replace(".udb", "")+" logged in");
+				return true;
+			}else
+			{
+				try {
+					log.warn("Authentication:verifyUserCredentials:User attempted login from "+InetAddress.getLocalHost().getHostName()+ " but password was incorrect");
+				} catch (UnknownHostException e) {
+					log.warn("Authentication:verifyUserCredentials:User attempted login but password was incorrect from unknown host");
+					e.printStackTrace();
+				}
+				return false;
 			}
-			return false;
 		}
+
 	}
 	
 	//Loads user workspace
 	public User loadData()
-	{
+	{ 
 		if(workingUserDirectory.length()>0)
 		{
 			log.info("Aunthentication:loadData: User directory ready for use");
@@ -97,7 +111,7 @@ public class Authentication implements AuthenticationInterface{
 
 	
 	//------------------------------------Getters and Setters----------------------------------
-	private FileIO getFileIo() {
+	public FileIO getFileIo() {
 		return fileIo;
 	}
 

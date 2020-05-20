@@ -25,12 +25,13 @@ public class User implements UserInterface,Serializable {
 	
 	public User() {
 		this.setNotebook(new Notebook());
-		this.setAccessToken(null);
+		this.setAccessToken(new AccessToken(false));
 	}
 	
 	public User(String username,String password) {
 		this.setUsername(username);
 		this.setPassword(password);
+		this.setAccessToken(new AccessToken(false));
 		this.setNotebook(new Notebook());
 	}
 

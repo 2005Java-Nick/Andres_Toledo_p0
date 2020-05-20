@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.revature.andres.db.PSQLConnection;
 import com.revature.andres.security.AccessToken;
 import com.revature.andres.security.Authentication;
 import com.revature.andres.security.Encryption;
@@ -16,12 +17,14 @@ public class AuthentificationTest {
 
 	Authentication authenticator;
 	Encryption encrypt;
+	PSQLConnection con;
 	
 	@Before
 	public void Setup()
 	{
 		authenticator =new Authentication();
 		encrypt=new Encryption();
+		con=new PSQLConnection();
 	}
 	
 	//Test Authentication verifyUserCredentials(User u,String seed)
@@ -31,13 +34,13 @@ public class AuthentificationTest {
 		String username="CxM81Ov3ZS2Vn43OJxmaJdBhooCVJYBl";
 		String seed="Password";
 		String password=encrypt.encryptString(seed, seed);
-		boolean result=authenticator.verifyUserCredentials(new User(username,password), seed);
+		boolean result=authenticator.verifyUserCredentials(new User(username,password), seed, con);
 		assertEquals("User with valid credentials should return true", true,result);
 	}
 
 	@Test
 	public void testVerifyCredentialsInvalidUser() {
-		boolean result=authenticator.verifyUserCredentials(null, "Wrong seed");
+		boolean result=authenticator.verifyUserCredentials(null, "Wrong seed", con);
 		assertEquals("User with invalid credentials should return false", false,result);
 	}
 	

@@ -9,13 +9,23 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 
 import org.apache.log4j.Logger;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
@@ -45,11 +55,14 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 	private JMenu btnEncryptPage;
 	private JMenu btnDecryptPage;
 	private JMenu btnDeletePage;
+	private JMenu btnEditorMode;
 	
 	//Text Area
-	private JTextArea txtPage;
+	private JTextPane txtPage;
+	DefaultStyledDocument document = new DefaultStyledDocument();
 	private JScrollPane bar;
-	
+	private ArrayList<String>reservedWords;
+
 	//Menu
 	private JMenuBar jMenuBar;
 	
@@ -60,12 +73,18 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 	//Manager singleton
 	private static ExperienceManager manager=ExperienceManager.getExperienceManager();
 	
+	//Editor Mode
+	private boolean editorMode=false;
+	
 	//-------------------------------------Methods-------------------------------------
 	
 	//Constructor : Initializes UI elements
+	/**
+	 * @param parent
+	 */
 	public MainProgramContent(MainProgramWindow parent) {
 		super();
-		
+		reservedWords=manager.getAuthenticator().getFileIo().getReservedWords();
 		//Sets Parent
 		this.setParent(parent);
 		this.setLayout(new GridLayout(1, 1));
@@ -78,10 +97,21 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 		this.setBtnEncryptPage(new JMenu("Encrypt Page"));
 		this.setBtnDecryptPage(new JMenu("Decrypt Page"));
 		this.setBtnDeletePage(new JMenu("Delete Page"));
-		this.setTxtPage(new JTextArea(""));
+		this.setBtnEditorMode(new JMenu("Toggle Editor Mode"));
+		this.setTxtPage(new JTextPane(document));
+		//this.getTxtPage().setEditorKit(new TabSizeEditorKit());
 		this.setBar(new JScrollPane(this.getTxtPage()));
-		this.getTxtPage().setLineWrap(true);
-		this.setPages(manager.getUser().getNotebook().getPages());
+		//this.getTxtPage().setLineWrap(true)
+		try
+		{
+			this.setPages(manager.getUser().getNotebook().getPages());
+		}catch(NullPointerException e)
+		{
+			this.setPages(new ArrayList<Page>());
+			log.info("MainProgramContent:Cons: Pages not found");
+		}
+		this.setBar(new JScrollPane(this.getTxtPage()));
+		//this.getTxtPage().setLineWrap(true);
 	
 		//Add action listeners
 		
@@ -92,6 +122,7 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 		this.getBtnDecryptPage().addMouseListener(this);
 		this.getBtnNewPage().addMouseListener(this);
 		this.getBtnDeletePage().addMouseListener(this);
+		this.getBtnEditorMode().addMouseListener(this);
 
 		
 		//Add text field to form
@@ -107,6 +138,7 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 		this.getJMenuBar().add(this.getBtnDecryptPage());
 		this.getJMenuBar().add(this.getBtnNewPage());
 		this.getJMenuBar().add(this.getBtnDeletePage());
+		this.getJMenuBar().add(this.getBtnEditorMode());
 		//this.getJMenuBar().add(this.getJMenu());
 		this.parent.setJMenuBar(this.getJMenuBar());
 		
@@ -262,8 +294,16 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 	//Sets components to necessary state
 	@Override
 	public void keyPressed(KeyEvent e) {
+		formatDocumentText();
 		verifyPageEncrypted();
 		validatePageIndex();
+		if(e.getKeyCode()==8)
+		{
+			this.keyBackspace();
+		}
+		if(e.getKeyCode()==KeyEvent.VK_LEFT) {
+			this.keyLeft();
+		}
 	}
 	//Saves changes to user data
 	@Override
@@ -274,7 +314,7 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 	//Unimplemented key event
 	@Override
 	public void keyTyped(KeyEvent e) {
-	}
+	}     
 	//Manages click on menu items
 	@Override
 	public void mouseClicked(MouseEvent e) {
@@ -336,6 +376,20 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 			this.setFirstPage();
 			saveChanges();
 		}
+		if(e.getSource().equals(this.getBtnEditorMode())&& this.getBtnEditorMode().isEnabled())
+		{
+			if(this.editorMode==false)
+			{
+				this.setEditorMode(true);
+				this.getBtnEditorMode().setBackground(Color.GREEN);
+				formatDocumentText();
+			}else
+			{
+				this.setEditorMode(false);
+				this.getBtnEditorMode().setBackground(Color.RED);
+				formatDocumentText();
+			}
+		}
 	}
 	//Verifies if data is encrypted 
 	@Override
@@ -365,10 +419,10 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 		this.parent = parent;
 	}
 	
-	public JTextArea getTxtPage() {
+	public JTextPane getTxtPage() {
 		return txtPage;
 	}
-	public void setTxtPage(JTextArea txtPage) {
+	public void setTxtPage(JTextPane txtPage) {
 		this.txtPage = txtPage;
 	}
 	public int getPageIndex() {
@@ -447,6 +501,103 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 	public void setJMenuBar(JMenuBar JMenuBar) {
 		this.jMenuBar = JMenuBar;
 	}
+	
+	public ArrayList<String> getReservedWords() {
+		return reservedWords;
+	}
 
+	public void setReservedWords(ArrayList<String> reservedWords) {
+		this.reservedWords = reservedWords;
+	}
+	
+	public JMenu getBtnEditorMode() {
+		return btnEditorMode;
+	}
+
+	public void setBtnEditorMode(JMenu btnEditorMode) {
+		this.btnEditorMode = btnEditorMode;
+	}
+
+	public boolean isEditorMode() {
+		return editorMode;
+	}
+
+	public void setEditorMode(boolean editorMode) {
+		this.editorMode = editorMode;
+	}
+	
+	public void formatDocumentText()
+	{	
+		  StyleContext context = new StyleContext();
+		  Style styleBlue = context.addStyle("reserved_words", null);
+		  Style styleBlack = context.addStyle("normal_words", null);
+		  StyleConstants.setForeground(styleBlue, Color.BLUE);
+		  StyleConstants.setForeground(styleBlack, Color.BLACK);
+		  String content = this.getTxtPage().getText();
+		  int temp=this.getTxtPage().getCaretPosition();
+		  try {
+			document.replace(0, this.getTxtPage().getText().length(),content,styleBlack);
+			this.getTxtPage().setCaretPosition(temp);
+		} catch (BadLocationException e1) {
+			// TODO Auto-generated catch block
+			//log.error("MainProgramWindow:formatDocumentText: Bad location error");
+		}
+		  
+		  if(this.isEditorMode())
+		  {
+			  content = this.getTxtPage().getText();
+			  for(String word : getReservedWords() )
+			  {
+			  		Pattern pattern = Pattern.compile("[^\\W]+");
+			  		Matcher matcher = pattern.matcher(content);
+			  		while(matcher.find()) {
+			  			try {
+			  				int begin=matcher.start();
+			  				int end= matcher.end();
+			  				String wordFound=content.substring(begin,end);
+			  				if(word.equalsIgnoreCase(wordFound))
+			  				{
+			  					document.replace(begin,end-begin,word,styleBlue);
+			  					appendToPane("", Color.BLACK);
+			  				}
+						} catch (BadLocationException e) {
+							e.printStackTrace();
+						}
+			  		}
+			  		this.getTxtPage().setCaretPosition(temp);
+			  }
+		  }
+		
+	}
+	
+	 public void appendToPane(String yourText, Color colour)
+	 {
+	      StyleContext sc = StyleContext.getDefaultStyleContext();
+	      AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, colour);
+	      aset = sc.addAttribute(aset, StyleConstants.FontFamily, "Times New Roman");
+
+	      int len = getTxtPage().getDocument().getLength();
+	      getTxtPage().setCaretPosition(len);
+	      getTxtPage().setCharacterAttributes(aset, false);
+	      getTxtPage().replaceSelection(yourText);
+	 }
+	 
+	 public void keyBackspace()
+	 {
+	/*	 try {
+			document.remove(document.getLength() - 1, 1);
+		} catch (BadLocationException e) {
+			// TODO Auto-generated catch block
+			log.error("MainProgramWindow:backspace: Backspace error");
+		}*/
+	 }
+	 
+	 public void keyLeft()
+	 {
+		 //getTxtPage().setCaretPosition(getTxtPage().getCaretPosition()-1);
+	 }
+
+
+	 
 
 }

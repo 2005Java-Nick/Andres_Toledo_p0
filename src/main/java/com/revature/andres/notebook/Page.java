@@ -26,6 +26,14 @@ public class Page implements Serializable{
 		this.setTitle(title);
 		this.text="";
 	}
+	
+	//--NEW page all parameters constructor
+	public Page(String title,String text,boolean status) {
+		super();
+		this.setTitle(title);
+		this.setText(text);
+		this.setEncrypted(status);
+	}
 
 	//-----------------------------------Getters and Setters-----------------------------------
 	

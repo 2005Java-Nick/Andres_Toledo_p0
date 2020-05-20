@@ -1,10 +1,16 @@
 package com.revature.andres.gui;
 
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+
 import javax.swing.JFrame;
 
-import com.revature.andres.notebook.ExperienceManager;
+import org.apache.log4j.Logger;
 
-public class MainProgramWindow extends JFrame {
+import com.revature.andres.notebook.ExperienceManager;
+import com.revature.andres.notebook.Notebook;
+
+public class MainProgramWindow extends JFrame implements WindowListener{
 
 	//-------------------------------------Variables-------------------------------------
 	
@@ -15,8 +21,8 @@ public class MainProgramWindow extends JFrame {
 	private static ExperienceManager manager= ExperienceManager.getExperienceManager();
 	
 	//User Interface title string variables
-	private String userName;
-	private String pageName;
+	private String userName="";
+	private String pageName="";
 	
 	//JPanel of content
 	private MainProgramContent content;
@@ -24,11 +30,27 @@ public class MainProgramWindow extends JFrame {
 	//Parent Login screen for call back
 	private LoginScreen parent;
 	
+	//One Logger for entire Application
+	private static Logger log=Logger.getRootLogger();
+	
+	//Decides which data to use moving forward
+	
 	//-------------------------------------Methods-------------------------------------
 
 	//Initializes UI components
 	public MainProgramWindow(String username,LoginScreen parent)
 	{
+		this.userName=username;
+		Notebook userNotebook=manager.getConnector().getPages(username);
+		if(userNotebook!=null)
+		{
+			manager.getUser().setNotebook(userNotebook);
+			manager.getUser().setAccessToken(manager.getAuthenticator().createAccessToken());
+			log.info("MainProgramWindow:Constructor: Correctly loaded user notbook from database");
+		}else
+		{
+			log.info("MainProgramWindow:Constructor: Error loading data from database proceding to use local copy");
+		}
 		this.setParentLogin(parent);
 		this.setContent(new MainProgramContent(this));
 		this.setUserName(username);
@@ -38,6 +60,7 @@ public class MainProgramWindow extends JFrame {
 		timer.start();
 		this.setTitle("Welcome: " + this.getUserName()+" Page: "+pageName+"	     Session Time Remaining: "+manager.getUser().getAcessToken().getSession().getTimeRemaining()+" seconds");
 		this.setContentPane(this.getContent());
+		this.addWindowListener(this);
 	}
 	
 	//-------------------------------------Getters and Setters-------------------------------------
@@ -95,9 +118,50 @@ public class MainProgramWindow extends JFrame {
 				manager.getUser().getAcessToken().getSession().minusSeconds(1);
 				setTitle("Welcome: " + getUserName()+"     Page: "+pageName+"     Session Time Remaining: "+manager.getUser().getAcessToken().getSession().getTimeRemaining()+" seconds");
 			}
+			manager.getConnector().saveNotebookData(getUserName(),content.getPages());
 			manager.printMessage("Session timed out please login again");
 			getParentLogin().setVisible(true);
 			dispose();
 		}
+	}
+
+	@Override
+	public void windowActivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowClosed(WindowEvent e) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void windowClosing(WindowEvent e) {
+		manager.getConnector().saveNotebookData(getUserName(),content.getPages());
+	}
+
+	@Override
+	public void windowDeactivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeiconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowIconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowOpened(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 }

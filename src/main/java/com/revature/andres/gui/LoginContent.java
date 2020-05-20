@@ -110,8 +110,10 @@ public class LoginContent extends JPanel implements ActionListener,LoginInterfac
 		//Validates inputs and tries to create new user if user doesn't exist
 		if(this.validateInputs())
 		{
+			
 			if(manager.createAccount(manager.getUser(), String.valueOf(this.getTxtPassword().getPassword())))
 			{
+				manager.getConnector().createUser(manager.getUser(), String.valueOf(this.getTxtPassword().getPassword()),manager.getAuthenticator().getEncryption());
 				manager.printMessage("User Created");
 			}else
 			{

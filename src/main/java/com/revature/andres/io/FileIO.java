@@ -1,12 +1,15 @@
 package com.revature.andres.io;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
@@ -58,7 +61,7 @@ public class FileIO implements FileIOInterface{
 	{
 		File folder = new File("./");
 		File[] listOfFiles = folder.listFiles();
-		boolean found=true;
+		boolean found=false;
 		for (int i = 0; i < listOfFiles.length; i++) {
 		  if (listOfFiles[i].isFile()&&listOfFiles[i].getName().contains(".udb")) {
 			  try {
@@ -66,26 +69,32 @@ public class FileIO implements FileIOInterface{
 				  String un=e.decryptString(seed, u.getUsername());
 				  if(du.equalsIgnoreCase(un))
 				  {
-					  return false;
+					  found= true;
+					  break;
 				  }
 				} catch (Exception e2) {
 					log.error("FileIO:createUser:Decryption Error");
 				}
 		  }
 		}
-		try {
-		      File myObj = new File("./"+u.getUsername()+".udb");
-		      if (myObj.createNewFile()) {
-		        log.info("FileIO:createUser:User File created");
-		      } else {
-		        
-		        log.info("FileIO:createUser:User already exists");
-		      }
-		    } catch (IOException e3) {
-		      return false;
-		    }
-		this.saveUser(u,u.getUsername()+".udb");
-		return found;
+		if(!found)
+		{
+			try {
+			      File myObj = new File("./"+u.getUsername()+".udb");
+			      if (myObj.createNewFile()) {
+			    	this.saveUser(u, u.getUsername()+".udb");
+			        log.info("FileIO:createUser:User File created");
+			        return true;
+			      } 
+			    } catch (IOException e3) {
+			    	log.info("FileIO:createUser:Could not create file");
+			    }
+			return false;	
+		}
+		else {
+			log.info("FileIO:createUser:User already exists");
+			return true;
+		}
 	}
 	
 	//Verifies user and returns user working directory
@@ -109,6 +118,27 @@ public class FileIO implements FileIOInterface{
 		  }
 		}
 		return "";
+	}
+	
+	
+	public ArrayList<String> getReservedWords()
+	{
+		ArrayList<String>temp=new ArrayList<String>();
+		File file = new File("./reservedwords.dat"); 
+		  BufferedReader br;
+		try {
+			br = new BufferedReader(new FileReader(file));
+			String st; 
+			while ((st = br.readLine()) != null) 
+			    temp.add(st);
+		}catch (FileNotFoundException e1) {
+			log.error("FileIO:getReservedWords: Error reserved words file not found editor disabled");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			log.error("FileIO:getReservedWords: Error importing reserved words");
+		}
+		  
+		return temp;
 	}
 
 }
