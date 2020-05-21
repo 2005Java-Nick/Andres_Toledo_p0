@@ -61,10 +61,10 @@ public class PSQLConnection {
 	     {
 		     rs.next();
 			 do{
-				 rs.getInt("page_id");
+				 int id=rs.getInt("page_id");
 				 String title = rs.getString("page_title");
 				 String text =rs.getString("page_text");
-				 temp.addPage(new Page(title,text,rs.getBoolean("page_encrypted")));
+				 temp.addPage(new Page(id,title,text,rs.getBoolean("page_encrypted")));
 		     }while (rs.next());
 	     }catch(NullPointerException e)
 	     {
@@ -95,7 +95,9 @@ public class PSQLConnection {
 	 //Save notebook data and replaces old data through a stored procedure in database
 	 public boolean saveNotebookData(String username,List<Page>pages)
 	 {
+		 
 		 int nID=getNotebookID(username);
+		 /*
 		 try {
 			 Connection conn = connect();
 			 CallableStatement upperProc = conn.prepareCall("call removeOldPagesNotebook( "+nID+" )");
@@ -108,16 +110,25 @@ public class PSQLConnection {
 			 log.error("PSQLConnection:saveNotebookData:Unable to drop old pages");
 			 //return false;
 		 }
-		 
+		 */
 		 try {
 			 log.info("PSQLConnection:saveNotebookData:Old data is obsolete updating changes");
 			 for(Page page : pages)
 			 {
 				 Connection conn = connect();
-				 CallableStatement upperProc = conn.prepareCall("call insertPageUserNotebook( "+nID+",'"+page.getTitle()+"',"+page.isEncrypted()+",'"+page.getText()+"' )");
-				 upperProc.execute();
-				 upperProc.close();
-				 log.info("PSQLConnection:saveNotebookData:Page "+page.getTitle()+" was saved successully");
+				 if(page.getPageId()>=0)
+				 {
+					 CallableStatement updPage = conn.prepareCall("call updatePage( "+page.getPageId()+",'"+page.getTitle()+"','"+page.getText()+"',"+page.isEncrypted()+" )");
+					 updPage.execute();
+					 updPage.close();
+					 log.info("PSQLConnection:saveNotebookData:Page "+page.getTitle()+" was updated successully");
+				 }else
+				 {
+					 CallableStatement insPage = conn.prepareCall("call insertPageUserNotebook( "+nID+",'"+page.getTitle()+"',"+page.isEncrypted()+",'"+page.getText()+"' )");
+					 insPage.execute();
+					 insPage.close();
+					 log.info("PSQLConnection:saveNotebookData:Page "+page.getTitle()+" was saved successully");
+				 }
 			 } 
 			 return true;
 		 }catch (Exception e){
@@ -171,6 +182,39 @@ public class PSQLConnection {
 	            log.error("PSQLConnection:verifyUserCredentials: Could not validate sql statement "+u.getUsername());
 	            return "";
 	        } 
+	 }
+	 
+	 public void deletePage(int pgID)
+	 {
+		 try {
+			 log.info("PSQLConnection:deletePage:Atempting to delete page from database");
+			 Connection conn = connect();
+			 CallableStatement updPage = conn.prepareCall("call deletePage( "+pgID+")");
+			 updPage.execute();
+			 updPage.close();
+			 log.info("PSQLConnection:saveNotebookData:Page "+pgID+" was deleted successully");
+			 
+		 }catch (Exception e){
+			 log.info("PSQLConnection:saveNotebookData: Unable to save data");
+		 }
+	 }
+	 
+	 public boolean sharePage(String user,int pageID)
+	 {
+		 int noteID=getNotebookID(user);
+		 try {
+			 log.info("PSQLConnection:deletePage:Atempting to delete page from database");
+			 Connection conn = connect();
+			 CallableStatement updPage = conn.prepareCall("call sharePage( "+noteID+","+pageID+")");
+			 updPage.execute();
+			 updPage.close();
+			 log.info("PSQLConnection:sharePage:Page "+pageID+" was shared successully");
+			 return true;
+			 
+		 }catch (Exception e){
+			 log.info("PSQLConnection:sharePage: Unable to share page");
+			 return false;
+		 }
 	 }
 	 
 	

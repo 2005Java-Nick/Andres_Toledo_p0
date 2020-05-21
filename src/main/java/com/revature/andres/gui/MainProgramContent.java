@@ -32,6 +32,7 @@ import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 
 import com.revature.andres.interfaces.MainProgramInterface;
 import com.revature.andres.notebook.ExperienceManager;
+import com.revature.andres.notebook.Notebook;
 import com.revature.andres.notebook.Page;
 
 public class MainProgramContent extends JPanel implements MouseListener,KeyListener,MainProgramInterface{
@@ -48,7 +49,7 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 	//Parent Window
 	private MainProgramWindow parent;
 	
-	//Buttons
+	//Menu Items
 	private JMenu btnPreviousPage;
 	private JMenu btnNextPage;
 	private JMenu btnNewPage;
@@ -56,6 +57,7 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 	private JMenu btnDecryptPage;
 	private JMenu btnDeletePage;
 	private JMenu btnEditorMode;
+	private JMenu btnSharePage;
 	
 	//Text Area
 	private JTextPane txtPage;
@@ -98,6 +100,7 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 		this.setBtnDecryptPage(new JMenu("Decrypt Page"));
 		this.setBtnDeletePage(new JMenu("Delete Page"));
 		this.setBtnEditorMode(new JMenu("Toggle Editor Mode"));
+		this.setBtnSharePage(new JMenu("Share Page"));
 		this.setTxtPage(new JTextPane(document));
 		//this.getTxtPage().setEditorKit(new TabSizeEditorKit());
 		this.setBar(new JScrollPane(this.getTxtPage()));
@@ -123,7 +126,7 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 		this.getBtnNewPage().addMouseListener(this);
 		this.getBtnDeletePage().addMouseListener(this);
 		this.getBtnEditorMode().addMouseListener(this);
-
+		this.getBtnSharePage().addMouseListener(this);
 		
 		//Add text field to form
 		this.add(BorderLayout.CENTER,bar);
@@ -139,6 +142,7 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 		this.getJMenuBar().add(this.getBtnNewPage());
 		this.getJMenuBar().add(this.getBtnDeletePage());
 		this.getJMenuBar().add(this.getBtnEditorMode());
+		this.getJMenuBar().add(this.getBtnSharePage());
 		//this.getJMenuBar().add(this.getJMenu());
 		this.parent.setJMenuBar(this.getJMenuBar());
 		
@@ -362,7 +366,11 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 			String title=manager.requestInput("Enter page title");
 			this.pageIndex++;
 			Page p =new Page(title);
+			p.setPageId(-1);
 			this.getPages().add(p);
+			manager.getConnector().saveNotebookData(parent.getUserName(),getPages());
+			Notebook userNotebook=manager.getConnector().getPages(parent.getUserName());
+			this.pages=userNotebook.getPages();
 			changePage(pageIndex);
 			validatePageIndex();
 		}
@@ -370,12 +378,19 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 		if(e.getSource().equals(this.getBtnDeletePage())&& this.getBtnDeletePage().isEnabled())
 		{
 			if(pageIndex>=0) {
+				//removes page from database
+				int dbRemoveId=this.getPages().get(pageIndex).getPageId();
+				if(dbRemoveId>0)
+				{
+					manager.getConnector().deletePage(dbRemoveId);
+				}
 				this.getPages().remove(pageIndex);
 				this.setPageIndex(this.getPageIndex()-1);
 			}
 			this.setFirstPage();
 			saveChanges();
 		}
+		//Enables editor mode beta
 		if(e.getSource().equals(this.getBtnEditorMode())&& this.getBtnEditorMode().isEnabled())
 		{
 			if(this.editorMode==false)
@@ -388,6 +403,24 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 				this.setEditorMode(false);
 				this.getBtnEditorMode().setBackground(Color.RED);
 				formatDocumentText();
+			}
+		}
+		//Shares page with another user
+		if(e.getSource().equals(this.getBtnSharePage())&& this.getBtnSharePage().isEnabled())
+		{
+			String userShare=manager.requestInput("Enter username for user you wish to share the page with.");
+			String userVerify=manager.requestInput("Verify username");
+			manager.requestPassword();
+			if(userShare.equals(userVerify))
+			{
+				boolean resultShare=manager.getConnector().sharePage(userShare, this.getPages().get(pageIndex).getPageId());
+				if (resultShare)
+				{
+					manager.printMessage("Page was shared successfuly with user "+userShare, "Share Page");
+				}else
+				{
+					manager.printMessage("Unable to share user does not exist or connection has been lost to the database", "Share Page");
+				}
 			}
 		}
 	}
@@ -596,6 +629,14 @@ public class MainProgramContent extends JPanel implements MouseListener,KeyListe
 	 {
 		 //getTxtPage().setCaretPosition(getTxtPage().getCaretPosition()-1);
 	 }
+
+	public JMenu getBtnSharePage() {
+		return btnSharePage;
+	}
+
+	public void setBtnSharePage(JMenu btnSharePage) {
+		this.btnSharePage = btnSharePage;
+	}
 
 
 	 

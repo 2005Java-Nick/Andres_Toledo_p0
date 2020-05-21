@@ -1,0 +1,5 @@
+delete from notebook_page;
+delete from user_notebook;
+delete from page ;
+delete from notebook ;
+delete from user_msn ;
